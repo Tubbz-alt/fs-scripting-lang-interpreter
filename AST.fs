@@ -10,6 +10,8 @@ type Expression =
   | Atomic of Atomic
   | Nested of Expression
   | Id of string
+  | And of left: Expression * right: Expression
+  | Or of left: Expression * right: Expression
 
 and Atomic = 
   | String of string

@@ -32,6 +32,8 @@ let rec evalExpr (expr: Expression) =
                                                   | Bool b -> not b |> Bool
                                                   | _      -> raise <| Exception "exepected Bool expr for '!'"
   | Nested e           -> evalExpr e
+  | And (l, r)         -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true && r = Bool true)
+  | Or (l, r)          -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true || r = Bool true)
 
 and evalCodeBlock (cb: CodeBlock) = 
   stack <- Map.empty :: stack
@@ -57,7 +59,7 @@ let main argv =
     let x = 2
     let y = 1
     
-    if true == x < 2 == false then {
+    if x == y || y == 1 then {
       let x = 5
       y = 5
       echo x
