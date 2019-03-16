@@ -1,34 +1,78 @@
 # Scripting language
 
-## Supports:
-  * Atomics: `int`, `bool`, `string`
-  * Conditions: if-statement and if-else-statement
-  * Lexial scoping within codeblocks
-  * Comparision expresions: `==`, `!=`, `<`, `>`
-  * Boolean algabra: `&&`, `||`
-  * Echo statement
+A simple scripting language writing in F# with FsLexYacc
 
-## Examples
+## Variables
+
+Variables are created with the `let` keyword:
 ```
-let x = 2
-let y = 1
+let x = 5
+```
+Variables are mutable:
+```
+let x = 5
+x = 6
+```
+String, bool and int are the supported primitive datatypes:
+```
+let string = "a string"
+let int = 1
+let bool = true
+```
 
-if x == y then {
-  echo "yes"
-} else {
-  echo "no"
+## Echo
+
+with `echo` you can print any variable:
+```
+let x = 1
+echo x
+echo "hi"
+```
+
+## Collections
+
+Collections are implemented as F# lists. They are created with `[` and `]`
+```
+let col = [1,2,3]
+```
+You can mix types in one collection:
+```
+let col = [1, "1", true]
+```
+Items are accesed by index:
+```
+let col = [1,2,3]
+let snd = x[1]
+x[1] = 5
+```
+
+## Iterations
+
+Lists can be iterated with the `foreach` keyword:
+```
+let col = [1,2,3]
+foreach item in col {
+  echo item
 }
+```
 
-echo x
+## Comparision
+
+Values can be compared with `!=`, `==`, `<` en `>`. You can only compare variables with the same types. Types will not chance at runtime. Boolean algabra is implemented with `||` and `&&`
+
+## Conditions
+
+Flowcontrol is implemented with if-statements and if-else-statements. For example:
+```
+if 5 == 4 then {
+  echo "shouldn't happed"
+}
 ```
 
 ```
-let x = 2
-let y = 1
-
-if x == y || x == 2 then {
-  echo "yes"
-} 
-
-echo x
+if 5 == 4 then {
+  echo "shouldn't happed"
+} else {
+  echo "should happen"
+}
 ```
