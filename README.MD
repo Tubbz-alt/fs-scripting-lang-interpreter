@@ -4,6 +4,7 @@ A simple scripting language writing in F# with FsLexYacc. Main features are:
 * Collections
 * Boolean algabra
 * Controlflow: `if`, `if-else`, `foreach`
+* Lexial scoping
 
 ## Variables
 
