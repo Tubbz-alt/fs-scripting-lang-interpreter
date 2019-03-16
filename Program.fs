@@ -42,20 +42,27 @@ let rec evalExpr (expr: Expression) =
                                                   | _      -> Exception "Index not an int" |> raise
                              | _              -> Exception "Collection not found" |> raise
 
-and evalCodeBlock (cb: CodeBlock) = 
-  stack <- Map.empty :: stack
+and evalCodeBlock (cb: CodeBlock) (scope: Map<string, Atomic>) = 
+  stack <- scope :: stack
   match cb with
   | CodeBlock cb -> List.map evalStm cb |> ignore
   stack <- stack.Tail
+
+and evalForeach (id: string) (alias: string) (cb: CodeBlock) =
+  let col = read id
+  match col with
+  | Collection c -> List.map (fun item ->  evalCodeBlock cb (Map.ofList [alias, item])) c
+  | _ -> Exception "foreach expected a collection" |> raise
+  |> ignore
 
 and evalStm (stm: Statement) = 
   match stm with
   | Declaration (name, expr) -> add name <| evalExpr expr
   | Assigment (name, expr)   -> write name <| evalExpr expr
   | If (pred, _then, _else)  -> evalExpr pred |> fun c -> if c = Bool true
-                                                           then evalCodeBlock _then |> ignore
+                                                           then evalCodeBlock _then Map.empty |> ignore
                                                            elif _else.IsSome
-                                                           then evalCodeBlock _else.Value |> ignore
+                                                           then evalCodeBlock _else.Value Map.empty |> ignore
   | Echo e                   -> evalExpr e |> printf "%A\n"
   | Expression e             -> evalExpr e |> ignore
   | CollectionSet (id, i, e) -> let c = read id
@@ -66,15 +73,24 @@ and evalStm (stm: Statement) =
                                             | Collection cc -> List.mapi (fun i a -> if i = index then evalExpr e else a) cc |> Collection
                                             | _             ->  Exception "Out of bouds" |> raise
                                 write id newC
+  | ForEach (id, a, cb)      -> evalForeach id a cb
 
 [<EntryPoint>]
 let main argv =
 
   let test = """
     let x = [1, 2, 3]
-    x[2] = true
+    foreach item in x {
+      let x = 2
+      if x == 2 then {
+        echo item
+        let item = 5
+        echo item
+      }
+      echo x
+    } 
     echo x
-  """
+     """
 
   let lexbuf = LexBuffer<char>.FromString test
   let ast: Statement list = Parser.start Lexer.tokenstream lexbuf
