@@ -1,6 +1,9 @@
 # Scripting language
 
-A simple scripting language writing in F# with FsLexYacc
+A simple scripting language writing in F# with FsLexYacc. Main features are:
+* Collections
+* Boolean algabra
+* Controlflow: `if`, `if-else`, `foreach`
 
 ## Variables
 
@@ -18,6 +21,19 @@ String, bool and int are the supported primitive datatypes:
 let string = "a string"
 let int = 1
 let bool = true
+```
+
+## Scoping
+This language uses lexial scoping. This will print 4 and 2:
+```
+let x = 1
+if true then {
+  x = 2
+  let x = 3
+  x = 4
+  echo x
+}
+echo x
 ```
 
 ## Echo

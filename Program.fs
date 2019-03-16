@@ -79,17 +79,14 @@ and evalStm (stm: Statement) =
 let main argv =
 
   let test = """
-    let x = [1, 2, 3]
-    foreach item in x {
-      let x = 2
-      if x == 2 then {
-        echo item
-        let item = 5
-        echo item
-      }
-      echo x
-    } 
-    echo x
+    let x = 1
+if true then {
+  x = 2
+  let x = 3
+  x = 4
+  echo x
+}
+echo x
      """
 
   let lexbuf = LexBuffer<char>.FromString test
