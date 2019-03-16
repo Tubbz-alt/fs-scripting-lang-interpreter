@@ -22,18 +22,25 @@ let write (id: string) (v: Atomic) =
 
 let rec evalExpr (expr: Expression) =
   match expr with
-  | Equals (l, r)      -> (evalExpr l, evalExpr r) ||> fun (l: Atomic) r -> l.IsEqual r |> Bool
-  | NotEquals (l, r)   -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsNotEqual r |> Bool
-  | Bigger (l, r)      -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsBigger r |> Bool
-  | Smaller (l, r)     -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsSmaller r |> Bool
-  | Atomic a           -> a
-  | Id id              -> read id
-  | Not e              -> evalExpr e |> fun r -> match r with
-                                                  | Bool b -> not b |> Bool
-                                                  | _      -> raise <| Exception "exepected Bool expr for '!'"
-  | Nested e           -> evalExpr e
-  | And (l, r)         -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true && r = Bool true)
-  | Or (l, r)          -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true || r = Bool true)
+  | Equals (l, r)         -> (evalExpr l, evalExpr r) ||> fun (l: Atomic) r -> l.IsEqual r |> Bool
+  | NotEquals (l, r)      -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsNotEqual r |> Bool
+  | Bigger (l, r)         -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsBigger r |> Bool
+  | Smaller (l, r)        -> (evalExpr l, evalExpr r) ||> fun (l: Atomic)  r -> l.IsSmaller r |> Bool
+  | Atomic a              -> a
+  | Id id                 -> read id
+  | Not e                 -> evalExpr e |> fun r -> match r with
+                                                     | Bool b -> not b |> Bool
+                                                     | _      -> raise <| Exception "exepected Bool expr for '!'"
+  | Nested e              -> evalExpr e
+  | And (l, r)            -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true && r = Bool true)
+  | Or (l, r)             -> (evalExpr l, evalExpr r) ||> fun l r -> Bool (l = Bool true || r = Bool true)
+  | CollectionInit e      -> List.map evalExpr e |> Collection
+  | CollectionGet (id, e) -> let c = read id
+                             match c with
+                             | Collection col -> match evalExpr e with
+                                                  | Int i  -> col.[i]
+                                                  | _      -> Exception "Index not an int" |> raise
+                             | _              -> Exception "Collection not found" |> raise
 
 and evalCodeBlock (cb: CodeBlock) = 
   stack <- Map.empty :: stack
@@ -51,20 +58,21 @@ and evalStm (stm: Statement) =
                                                            then evalCodeBlock _else.Value |> ignore
   | Echo e                   -> evalExpr e |> printf "%A\n"
   | Expression e             -> evalExpr e |> ignore
+  | CollectionSet (id, i, e) -> let c = read id
+                                let index = match evalExpr i with
+                                            | Int i -> i
+                                            | _     -> Exception "Index should be an int" |> raise
+                                let newC = match c with 
+                                            | Collection cc -> List.mapi (fun i a -> if i = index then evalExpr e else a) cc |> Collection
+                                            | _             ->  Exception "Out of bouds" |> raise
+                                write id newC
 
 [<EntryPoint>]
 let main argv =
 
   let test = """
-    let x = 2
-    let y = 1
-    
-    if x == y || y == 1 then {
-      let x = 5
-      y = 5
-      echo x
-    }
-
+    let x = [1, 2, 3]
+    x[2] = true
     echo x
   """
 

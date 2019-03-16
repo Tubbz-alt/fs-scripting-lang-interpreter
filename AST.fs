@@ -12,11 +12,14 @@ type Expression =
   | Id of string
   | And of left: Expression * right: Expression
   | Or of left: Expression * right: Expression
+  | CollectionInit of Expression list
+  | CollectionGet of id: string * index: Expression
 
 and Atomic = 
   | String of string
   | Int of int
   | Bool of bool
+  | Collection of Atomic list
 with member l.IsEqual (r: Atomic) =
         match (l, r) with
         | (Bool l, Bool r)      -> l = r
@@ -48,5 +51,6 @@ and Statement =
   | If of predicate: Expression * _then: CodeBlock * _else: CodeBlock option
   | Echo of Expression
   | Expression of Expression
+  | CollectionSet of id: string * index: Expression * value: Expression
 
 and CodeBlock = CodeBlock of Statement list

@@ -23,12 +23,14 @@ let int = ['-' '+']? ['0'-'9']+
   
 rule tokenstream = 
 parse
+  | "["           { Parser.LSQR }
+  | "]"           { Parser.RSQR } 
+  | ","           { Parser.COMMA }
   | "&&"          { Parser.AND }
   | "||"          { Parser.OR }
   | "!"           { Parser.NOT }
   | "("           { Parser.LPAR }
   | ")"           { Parser.RPAR }
-  | "fun"         { Parser.FUN }
   | "echo"        { Parser.ECHO }
   | "="           { Parser.EQUALS }
   | ">"           { Parser.BIGGER }

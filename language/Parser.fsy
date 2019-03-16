@@ -9,11 +9,11 @@ open AST
 
 // Regular tokens
 %token LET SEMICOLOMN LACC RACC
-%token EQUALS BIGGER SMALLER NOT
+%token EQUALS BIGGER SMALLER NOT LPAR RPAR
 %token AND OR
 %token IF THEN ELSE
 %token ECHO
-%token FUN LPAR RPAR RETURN
+%token LSQR RSQR COMMA
 %token < string > ID
 %token < string > STRING
 %token < int32 > INT
@@ -43,6 +43,7 @@ statement:
   | IF expression THEN codeblock ELSE codeblock       { If ($2, $4, Some $6) }
   | IF expression THEN codeblock                      { If ($2, $4, None) }
   | ECHO expression                                   { Echo $2 }
+  | ID LSQR expression RSQR EQUALS expression         { CollectionSet ($1, $3, $6)}
   | expression                                        { Expression $1 }
 
 atomic:
@@ -62,8 +63,14 @@ expression1:
   | expression2                                       { $1 }
 
 expression2:
+  | LSQR expression_list RSQR                         { CollectionInit $2 }
+  | ID LSQR expression RSQR                           { CollectionGet ($1, $3) }
   | expression1 BIGGER expression2                    { Bigger ($1, $3) }
   | expression1 SMALLER expression2                   { Smaller ($1, $3) }
   | ID                                                { Id $1 }
   | atomic                                            { Atomic $1 }
   | LPAR expression RPAR                              { Nested $2 }
+
+expression_list:
+  | expression                                        { [$1] }
+  | expression COMMA expression_list                  { $1 :: $3}
