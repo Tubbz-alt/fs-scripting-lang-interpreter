@@ -13,7 +13,7 @@ open AST
 %token AND OR
 %token IF THEN ELSE
 %token ECHO
-%token LSQR RSQR COMMA
+%token LSQR RSQR COMMA AT
 %token FOREACH IN
 %token < string > ID
 %token < string > STRING
@@ -45,6 +45,7 @@ statement:
   | IF expression THEN codeblock                      { If ($2, $4, None) }
   | ECHO expression                                   { Echo $2 }
   | ID LSQR expression RSQR EQUALS expression         { CollectionSet ($1, $3, $6)}
+  | ID AT expression                                  { CollectionAdd ($1, $3)}
   | FOREACH ID IN ID codeblock                        { ForEach ($4, $2, $5) }
   | expression                                        { Expression $1 }
 

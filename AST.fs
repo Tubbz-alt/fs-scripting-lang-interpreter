@@ -52,6 +52,7 @@ and Statement =
   | Echo of Expression
   | Expression of Expression
   | CollectionSet of id: string * index: Expression * value: Expression
+  | CollectionAdd of id: string * value: Expression
   | ForEach of id:string * alias: string * codeblock: CodeBlock
 
 and CodeBlock = CodeBlock of Statement list

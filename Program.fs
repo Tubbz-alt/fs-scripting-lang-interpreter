@@ -7,7 +7,7 @@ let mutable stack: List<Map<string, Atomic>> = Map.empty :: List.empty
 
 let read (id: string) = 
   List.tryPick (fun scope -> if Map.containsKey id scope then scope.[id] |> Some else None) stack
-  |> fun v -> v.Value
+  |> fun v -> if v.IsSome then v.Value else Exception <| "Variable not defined: " + id |> raise
 
 let add (id: string) (v: Atomic) =
   let scope = stack.Head |> fun scope -> scope.Add (id, v)
@@ -74,19 +74,18 @@ and evalStm (stm: Statement) =
                                             | _             ->  Exception "Out of bouds" |> raise
                                 write id newC
   | ForEach (id, a, cb)      -> evalForeach id a cb
-
+  | CollectionAdd (id, e)    -> let v = evalExpr e
+                                let c = match read id with 
+                                        | Collection c -> c @ [v]
+                                        | _            -> Exception "@ expects a collection" |> raise
+                                Collection c |> write id
 [<EntryPoint>]
 let main argv =
 
   let test = """
-    let x = 1
-if true then {
-  x = 2
-  let x = 3
-  x = 4
-  echo x
-}
-echo x
+    let x = [1,2,3]
+    x @ 4
+    echo x
      """
 
   let lexbuf = LexBuffer<char>.FromString test
